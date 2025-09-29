@@ -19,7 +19,7 @@ return [
     [ // $dynamicRoutes
         35 => [[['_route' => '_preview_error', '_controller' => 'error_controller::preview', '_format' => 'html'], ['code', '_format'], null, null, false, true, null]],
         69 => [
-            [['_route' => 'app_order_markpaid', '_controller' => 'App\\Controller\\OrderController::markPaid'], ['id'], ['POST' => 0], null, false, false, null],
+            [['_route' => 'app_order_mark_paid', '_controller' => 'App\\Controller\\OrderController::markPaid'], ['id'], ['POST' => 0], null, false, false, null],
             [null, null, null, null, false, false, 0],
         ],
     ],

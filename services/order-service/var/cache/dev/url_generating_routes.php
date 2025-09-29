@@ -5,7 +5,7 @@
 return [
     '_preview_error' => [['code', '_format'], ['_controller' => 'error_controller::preview', '_format' => 'html'], ['code' => '\\d+'], [['variable', '.', '[^/]++', '_format', true], ['variable', '/', '\\d+', 'code', true], ['text', '/_error']], [], [], []],
     'app_order_create' => [[], ['_controller' => 'App\\Controller\\OrderController::create'], [], [['text', '/orders']], [], [], []],
-    'app_order_markpaid' => [['id'], ['_controller' => 'App\\Controller\\OrderController::markPaid'], [], [['text', '/mark-paid'], ['variable', '/', '[^/]++', 'id', true], ['text', '/orders']], [], [], []],
+    'app_order_mark_paid' => [['id'], ['_controller' => 'App\\Controller\\OrderController::markPaid'], [], [['text', '/mark-paid'], ['variable', '/', '[^/]++', 'id', true], ['text', '/orders']], [], [], []],
     'App\Controller\OrderController::create' => [[], ['_controller' => 'App\\Controller\\OrderController::create'], [], [['text', '/orders']], [], [], []],
     'App\Controller\OrderController::markPaid' => [['id'], ['_controller' => 'App\\Controller\\OrderController::markPaid'], [], [['text', '/mark-paid'], ['variable', '/', '[^/]++', 'id', true], ['text', '/orders']], [], [], []],
 ];

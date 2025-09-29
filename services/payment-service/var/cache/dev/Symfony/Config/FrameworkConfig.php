@@ -562,7 +562,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
 
     /**
      * Serializer configuration
-     * @default {"enabled":true,"enable_attributes":true,"mapping":{"paths":[]},"default_context":[],"named_serializers":[]}
+     * @default {"enabled":false,"enable_attributes":true,"mapping":{"paths":[]},"default_context":[],"named_serializers":[]}
     */
     public function serializer(array $value = []): \Symfony\Config\Framework\SerializerConfig
     {
@@ -578,7 +578,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
 
     /**
      * Property access configuration
-     * @default {"enabled":true,"magic_call":false,"magic_get":true,"magic_set":true,"throw_exception_on_invalid_index":false,"throw_exception_on_invalid_property_path":true}
+     * @default {"enabled":false,"magic_call":false,"magic_get":true,"magic_set":true,"throw_exception_on_invalid_index":false,"throw_exception_on_invalid_property_path":true}
     */
     public function propertyAccess(array $value = []): \Symfony\Config\Framework\PropertyAccessConfig
     {
@@ -594,7 +594,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
 
     /**
      * Type info configuration
-     * @default {"enabled":true}
+     * @default {"enabled":false}
     */
     public function typeInfo(array $value = []): \Symfony\Config\Framework\TypeInfoConfig
     {
@@ -610,7 +610,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
 
     /**
      * Property info configuration
-     * @default {"enabled":true}
+     * @default {"enabled":false}
     */
     public function propertyInfo(array $value = []): \Symfony\Config\Framework\PropertyInfoConfig
     {
@@ -1157,25 +1157,25 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
 
         if (array_key_exists('serializer', $value)) {
             $this->_usedProperties['serializer'] = true;
-            $this->serializer = new \Symfony\Config\Framework\SerializerConfig($value['serializer']);
+            $this->serializer = \is_array($value['serializer']) ? new \Symfony\Config\Framework\SerializerConfig($value['serializer']) : $value['serializer'];
             unset($value['serializer']);
         }
 
         if (array_key_exists('property_access', $value)) {
             $this->_usedProperties['propertyAccess'] = true;
-            $this->propertyAccess = new \Symfony\Config\Framework\PropertyAccessConfig($value['property_access']);
+            $this->propertyAccess = \is_array($value['property_access']) ? new \Symfony\Config\Framework\PropertyAccessConfig($value['property_access']) : $value['property_access'];
             unset($value['property_access']);
         }
 
         if (array_key_exists('type_info', $value)) {
             $this->_usedProperties['typeInfo'] = true;
-            $this->typeInfo = new \Symfony\Config\Framework\TypeInfoConfig($value['type_info']);
+            $this->typeInfo = \is_array($value['type_info']) ? new \Symfony\Config\Framework\TypeInfoConfig($value['type_info']) : $value['type_info'];
             unset($value['type_info']);
         }
 
         if (array_key_exists('property_info', $value)) {
             $this->_usedProperties['propertyInfo'] = true;
-            $this->propertyInfo = new \Symfony\Config\Framework\PropertyInfoConfig($value['property_info']);
+            $this->propertyInfo = \is_array($value['property_info']) ? new \Symfony\Config\Framework\PropertyInfoConfig($value['property_info']) : $value['property_info'];
             unset($value['property_info']);
         }
 
@@ -1392,16 +1392,16 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
             $output['annotations'] = $this->annotations instanceof \Symfony\Config\Framework\AnnotationsConfig ? $this->annotations->toArray() : $this->annotations;
         }
         if (isset($this->_usedProperties['serializer'])) {
-            $output['serializer'] = $this->serializer->toArray();
+            $output['serializer'] = $this->serializer instanceof \Symfony\Config\Framework\SerializerConfig ? $this->serializer->toArray() : $this->serializer;
         }
         if (isset($this->_usedProperties['propertyAccess'])) {
-            $output['property_access'] = $this->propertyAccess->toArray();
+            $output['property_access'] = $this->propertyAccess instanceof \Symfony\Config\Framework\PropertyAccessConfig ? $this->propertyAccess->toArray() : $this->propertyAccess;
         }
         if (isset($this->_usedProperties['typeInfo'])) {
-            $output['type_info'] = $this->typeInfo->toArray();
+            $output['type_info'] = $this->typeInfo instanceof \Symfony\Config\Framework\TypeInfoConfig ? $this->typeInfo->toArray() : $this->typeInfo;
         }
         if (isset($this->_usedProperties['propertyInfo'])) {
-            $output['property_info'] = $this->propertyInfo->toArray();
+            $output['property_info'] = $this->propertyInfo instanceof \Symfony\Config\Framework\PropertyInfoConfig ? $this->propertyInfo->toArray() : $this->propertyInfo;
         }
         if (isset($this->_usedProperties['cache'])) {
             $output['cache'] = $this->cache->toArray();

@@ -715,7 +715,7 @@ class ConnectionConfig
     }
 
     /**
-     * @default 'doctrine.dbal.legacy_schema_manager_factory'
+     * @default 'doctrine.dbal.default_schema_manager_factory'
      * @param ParamConfigurator|mixed $value
      * @return $this
      */

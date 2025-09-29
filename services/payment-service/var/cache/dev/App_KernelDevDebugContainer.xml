@@ -59,18 +59,7 @@
     <parameter key="router.cache_dir">/home/shamim/microservice-order-demo/services/payment-service/var/cache/dev</parameter>
     <parameter key="request_listener.http_port">80</parameter>
     <parameter key="request_listener.https_port">443</parameter>
-    <parameter key="serializer.mapping.cache.file">/home/shamim/microservice-order-demo/services/payment-service/var/cache/dev/serialization.php</parameter>
-    <parameter key=".serializer.named_serializers" type="collection"/>
     <parameter key="cache.prefix.seed">_/home/shamim/microservice-order-demo/services/payment-service.App_KernelDevDebugContainer</parameter>
-    <parameter key="session.metadata.storage_key">_sf2_meta</parameter>
-    <parameter key="session.storage.options" type="collection">
-      <parameter key="cache_limiter" type="string">0</parameter>
-      <parameter key="cookie_secure">auto</parameter>
-      <parameter key="cookie_httponly">true</parameter>
-      <parameter key="cookie_samesite">lax</parameter>
-    </parameter>
-    <parameter key="session.save_path">null</parameter>
-    <parameter key="session.metadata.update_threshold">0</parameter>
     <parameter key="data_collector.templates" type="collection"/>
     <parameter key="console.command.ids" type="collection"/>
   </parameters>
@@ -128,12 +117,7 @@
     </service>
     <service id="argument_resolver.request_payload" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\RequestPayloadValueResolver" lazy="true">
       <tag name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\RequestPayloadValueResolver">controller.targeted_value_resolver</tag>
-      <tag name="kernel.event_subscriber"/>
-      <tag name="container.hot_path"/>
-      <argument type="service" id="serializer"/>
-      <argument>null</argument>
-      <argument>null</argument>
-      <argument>validators</argument>
+      <tag name="container.error" message="You can neither use &quot;#[MapRequestPayload]&quot; nor &quot;#[MapQueryString]&quot; since the Serializer component is not installed. Try running &quot;composer require symfony/serializer-pack&quot;."/>
     </service>
     <service id="argument_resolver.request_attribute" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\RequestAttributeValueResolver">
       <tag priority="100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\RequestAttributeValueResolver">controller.argument_value_resolver</tag>
@@ -185,7 +169,7 @@
     <service id="error_controller" class="Symfony\Component\HttpKernel\Controller\ErrorController" public="true">
       <argument type="service" id="http_kernel"/>
       <argument>error_controller</argument>
-      <argument type="service" id="error_handler.error_renderer.serializer"/>
+      <argument type="service" id="error_handler.error_renderer.html"/>
     </service>
     <service id="exception_listener" class="Symfony\Component\HttpKernel\EventListener\ErrorListener">
       <tag name="kernel.event_subscriber"/>
@@ -209,14 +193,6 @@
     <service id="event_dispatcher" class="Symfony\Component\EventDispatcher\EventDispatcher" public="true">
       <tag name="container.hot_path"/>
       <tag name="event_dispatcher">event_dispatcher.dispatcher</tag>
-      <call method="addListener">
-        <argument>kernel.controller_arguments</argument>
-        <argument type="collection">
-          <argument type="service_closure" id="argument_resolver.request_payload"/>
-          <argument>onKernelControllerArguments</argument>
-        </argument>
-        <argument>0</argument>
-      </call>
       <call method="addListener">
         <argument>kernel.response</argument>
         <argument type="collection">
@@ -378,22 +354,6 @@
         <argument>-64</argument>
       </call>
       <call method="addListener">
-        <argument>kernel.request</argument>
-        <argument type="collection">
-          <argument type="service_closure" id="session_listener"/>
-          <argument>onKernelRequest</argument>
-        </argument>
-        <argument>128</argument>
-      </call>
-      <call method="addListener">
-        <argument>kernel.response</argument>
-        <argument type="collection">
-          <argument type="service_closure" id="session_listener"/>
-          <argument>onKernelResponse</argument>
-        </argument>
-        <argument>-1000</argument>
-      </call>
-      <call method="addListener">
         <argument>Symfony\Component\Messenger\Event\WorkerMessageFailedEvent</argument>
         <argument type="collection">
           <argument type="service_closure" id="messenger.retry.send_failed_message_for_retry_listener"/>
@@ -537,7 +497,6 @@
         <argument key="cache.messenger.restart_workers_signal" type="service" id="cache.messenger.restart_workers_signal" on-invalid="ignore_uninitialized"/>
         <argument key="http_client.transport" type="service" id="http_client.transport" on-invalid="ignore_uninitialized"/>
         <argument key="http_client" type="service" id="http_client.uri_template" on-invalid="ignore_uninitialized"/>
-        <argument key="session_listener" type="service" id="session_listener" on-invalid="ignore_uninitialized"/>
         <argument key="messenger.transport.in_memory.factory" type="service" id="messenger.transport.in_memory.factory" on-invalid="ignore_uninitialized"/>
       </argument>
       <argument type="collection">
@@ -570,9 +529,6 @@
         </argument>
         <argument key="http_client" type="collection">
           <argument>?reset</argument>
-        </argument>
-        <argument key="session_listener" type="collection">
-          <argument>reset</argument>
         </argument>
         <argument key="messenger.transport.in_memory.factory" type="collection">
           <argument>reset</argument>
@@ -997,17 +953,6 @@
       </call>
       <call method="setDescription">
         <argument>Help debug routes by simulating a path info match</argument>
-      </call>
-    </service>
-    <service id="console.command.serializer_debug" class="Symfony\Component\Serializer\Command\DebugCommand">
-      <tag name="console.command"/>
-      <tag name="container.no_preload"/>
-      <argument type="service" id="serializer.mapping.class_metadata_factory"/>
-      <call method="setName">
-        <argument>debug:serializer</argument>
-      </call>
-      <call method="setDescription">
-        <argument>Display serialization information for classes</argument>
       </call>
     </service>
     <service id="console.command.yaml_lint" class="Symfony\Bundle\FrameworkBundle\Command\YamlLintCommand">
@@ -1539,13 +1484,6 @@
     <service id="Symfony\Bundle\FrameworkBundle\Controller\TemplateController" class="Symfony\Bundle\FrameworkBundle\Controller\TemplateController" public="true">
       <argument>null</argument>
     </service>
-    <service id="property_accessor" class="Symfony\Component\PropertyAccess\PropertyAccessor">
-      <argument>3</argument>
-      <argument>2</argument>
-      <argument type="service" id="cache.property_access" on-invalid="ignore"/>
-      <argument type="service" id="property_info.reflection_extractor" on-invalid="null"/>
-      <argument type="service" id="property_info.reflection_extractor" on-invalid="null"/>
-    </service>
     <service id="secrets.vault" class="Symfony\Bundle\FrameworkBundle\Secrets\SodiumVault">
       <argument>/home/shamim/microservice-order-demo/services/payment-service/config/secrets/%env(default:kernel.environment:APP_RUNTIME_ENV)%</argument>
       <argument type="service" id="secrets.decryption_key" on-invalid="ignore"/>
@@ -1561,279 +1499,6 @@
     </service>
     <service id="secrets.local_vault" class="Symfony\Bundle\FrameworkBundle\Secrets\DotenvVault">
       <argument>/home/shamim/microservice-order-demo/services/payment-service/.env.dev.local</argument>
-    </service>
-    <service id="serializer" class="Symfony\Component\Serializer\Serializer">
-      <argument type="collection">
-        <argument type="service" id="serializer.denormalizer.unwrapping"/>
-        <argument type="service" id="serializer.normalizer.flatten_exception"/>
-        <argument type="service" id="serializer.normalizer.problem"/>
-        <argument type="service" id="serializer.normalizer.uid"/>
-        <argument type="service" id="serializer.normalizer.datetime"/>
-        <argument type="service" id="serializer.normalizer.constraint_violation_list"/>
-        <argument type="service" id="serializer.normalizer.datetimezone"/>
-        <argument type="service" id="serializer.normalizer.dateinterval"/>
-        <argument type="service" id="serializer.normalizer.form_error"/>
-        <argument type="service" id="serializer.normalizer.backed_enum"/>
-        <argument type="service" id="serializer.normalizer.number"/>
-        <argument type="service" id="serializer.normalizer.data_uri"/>
-        <argument type="service" id="serializer.normalizer.json_serializable"/>
-        <argument type="service" id="serializer.denormalizer.array"/>
-        <argument type="service" id="serializer.normalizer.object"/>
-      </argument>
-      <argument type="collection">
-        <argument type="service" id="serializer.encoder.xml"/>
-        <argument type="service" id="serializer.encoder.json"/>
-        <argument type="service" id="serializer.encoder.yaml"/>
-        <argument type="service" id="serializer.encoder.csv"/>
-      </argument>
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.mapping.class_discriminator_resolver" class="Symfony\Component\Serializer\Mapping\ClassDiscriminatorFromClassMetadata">
-      <argument type="service" id="serializer.mapping.class_metadata_factory"/>
-    </service>
-    <service id="serializer.normalizer.constraint_violation_list" class="Symfony\Component\Serializer\Normalizer\ConstraintViolationListNormalizer" autowire="true">
-      <tag name="serializer.normalizer" built_in="1" priority="-915"/>
-      <tag name="serializer.normalizer.default" priority="-915"/>
-      <argument type="collection"/>
-      <argument type="service" id="serializer.name_converter.metadata_aware"/>
-    </service>
-    <service id="serializer.normalizer.datetimezone" class="Symfony\Component\Serializer\Normalizer\DateTimeZoneNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-915"/>
-      <tag name="serializer.normalizer.default" priority="-915"/>
-    </service>
-    <service id="serializer.normalizer.dateinterval" class="Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-915"/>
-      <tag name="serializer.normalizer.default" priority="-915"/>
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.normalizer.data_uri" class="Symfony\Component\Serializer\Normalizer\DataUriNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-920"/>
-      <tag name="serializer.normalizer.default" priority="-920"/>
-      <argument>null</argument>
-    </service>
-    <service id="serializer.normalizer.datetime" class="Symfony\Component\Serializer\Normalizer\DateTimeNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-910"/>
-      <tag name="serializer.normalizer.default" priority="-910"/>
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.normalizer.json_serializable" class="Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-950"/>
-      <tag name="serializer.normalizer.default" priority="-950"/>
-      <argument>null</argument>
-      <argument>null</argument>
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.normalizer.problem" class="Symfony\Component\Serializer\Normalizer\ProblemNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-890"/>
-      <tag name="serializer.normalizer.default" priority="-890"/>
-      <argument>true</argument>
-      <argument type="collection"/>
-      <argument>null</argument>
-    </service>
-    <service id="serializer.denormalizer.unwrapping" class="Symfony\Component\Serializer\Normalizer\UnwrappingDenormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="1000"/>
-      <tag name="serializer.normalizer.default" priority="1000"/>
-      <argument type="service" id="property_accessor"/>
-    </service>
-    <service id="serializer.normalizer.uid" class="Symfony\Component\Serializer\Normalizer\UidNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-890"/>
-      <tag name="serializer.normalizer.default" priority="-890"/>
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.normalizer.form_error" class="Symfony\Component\Serializer\Normalizer\FormErrorNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-915"/>
-      <tag name="serializer.normalizer.default" priority="-915"/>
-    </service>
-    <service id="serializer.normalizer.object" class="Symfony\Component\Serializer\Normalizer\ObjectNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-1000"/>
-      <tag name="serializer.normalizer.default" priority="-1000"/>
-      <argument type="service" id="serializer.mapping.class_metadata_factory"/>
-      <argument type="service" id="serializer.name_converter.metadata_aware"/>
-      <argument type="service" id="property_accessor"/>
-      <argument type="service" id="property_info" on-invalid="ignore"/>
-      <argument type="service" id="serializer.mapping.class_discriminator_resolver" on-invalid="ignore"/>
-      <argument>null</argument>
-      <argument type="collection"/>
-      <argument type="service" id="property_info" on-invalid="ignore"/>
-    </service>
-    <service id="serializer.normalizer.property" class="Symfony\Component\Serializer\Normalizer\PropertyNormalizer">
-      <argument type="service" id="serializer.mapping.class_metadata_factory"/>
-      <argument type="service" id="serializer.name_converter.metadata_aware"/>
-      <argument type="service" id="property_info" on-invalid="ignore"/>
-      <argument type="service" id="serializer.mapping.class_discriminator_resolver" on-invalid="ignore"/>
-      <argument>null</argument>
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.denormalizer.array" class="Symfony\Component\Serializer\Normalizer\ArrayDenormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-990"/>
-      <tag name="serializer.normalizer.default" priority="-990"/>
-    </service>
-    <service id="serializer.mapping.chain_loader" class="Symfony\Component\Serializer\Mapping\Loader\LoaderChain">
-      <argument type="collection">
-        <argument type="service">
-          <service class="Symfony\Component\Serializer\Mapping\Loader\AttributeLoader"/>
-        </argument>
-      </argument>
-    </service>
-    <service id="serializer.mapping.class_metadata_factory" class="Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory">
-      <argument type="service" id="serializer.mapping.chain_loader"/>
-    </service>
-    <service id="serializer.mapping.cache_warmer" class="Symfony\Bundle\FrameworkBundle\CacheWarmer\SerializerCacheWarmer">
-      <tag name="kernel.cache_warmer"/>
-      <argument type="collection">
-        <argument type="service">
-          <service class="Symfony\Component\Serializer\Mapping\Loader\AttributeLoader"/>
-        </argument>
-      </argument>
-      <argument>/home/shamim/microservice-order-demo/services/payment-service/var/cache/dev/serialization.php</argument>
-    </service>
-    <service id="serializer.mapping.cache.symfony" class="Psr\Cache\CacheItemPoolInterface">
-      <argument>/home/shamim/microservice-order-demo/services/payment-service/var/cache/dev/serialization.php</argument>
-      <argument type="service" id="cache.serializer"/>
-      <factory class="Symfony\Component\Cache\Adapter\PhpArrayAdapter" method="create"/>
-    </service>
-    <service id="serializer.encoder.xml" class="Symfony\Component\Serializer\Encoder\XmlEncoder">
-      <tag name="serializer.encoder" built_in="1"/>
-      <tag name="serializer.encoder.default"/>
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.encoder.json" class="Symfony\Component\Serializer\Encoder\JsonEncoder">
-      <tag name="serializer.encoder" built_in="1"/>
-      <tag name="serializer.encoder.default"/>
-      <argument>null</argument>
-      <argument>null</argument>
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.encoder.yaml" class="Symfony\Component\Serializer\Encoder\YamlEncoder">
-      <tag name="serializer.encoder" built_in="1"/>
-      <tag name="serializer.encoder.default"/>
-      <argument>null</argument>
-      <argument>null</argument>
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.encoder.csv" class="Symfony\Component\Serializer\Encoder\CsvEncoder">
-      <tag name="serializer.encoder" built_in="1"/>
-      <tag name="serializer.encoder.default"/>
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.name_converter.camel_case_to_snake_case" class="Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter"/>
-    <service id="serializer.name_converter.snake_case_to_camel_case" class="Symfony\Component\Serializer\NameConverter\SnakeCaseToCamelCaseNameConverter"/>
-    <service id="serializer.name_converter.metadata_aware.abstract" class="Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter" abstract="true">
-      <argument type="service" id="serializer.mapping.class_metadata_factory"/>
-    </service>
-    <service id="serializer.name_converter.metadata_aware" class="Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter">
-      <argument type="service" id="serializer.mapping.class_metadata_factory"/>
-    </service>
-    <service id="property_info.serializer_extractor" class="Symfony\Component\PropertyInfo\Extractor\SerializerExtractor">
-      <tag name="property_info.list_extractor" priority="-999"/>
-      <argument type="service" id="serializer.mapping.class_metadata_factory"/>
-    </service>
-    <service id="error_handler.error_renderer.serializer" class="Symfony\Component\ErrorHandler\ErrorRenderer\SerializerErrorRenderer">
-      <argument type="service" id="serializer"/>
-      <argument type="service">
-        <service>
-          <argument type="service" id="request_stack"/>
-          <factory class="Symfony\Component\ErrorHandler\ErrorRenderer\SerializerErrorRenderer" method="getPreferredFormat"/>
-        </service>
-      </argument>
-      <argument type="service" id="error_handler.error_renderer.html"/>
-      <argument type="service">
-        <service>
-          <argument type="service" id="request_stack"/>
-          <argument>true</argument>
-          <factory class="Symfony\Component\ErrorHandler\ErrorRenderer\HtmlErrorRenderer" method="isDebug"/>
-        </service>
-      </argument>
-    </service>
-    <service id="serializer.normalizer.backed_enum" class="Symfony\Component\Serializer\Normalizer\BackedEnumNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-915"/>
-      <tag name="serializer.normalizer.default" priority="-915"/>
-    </service>
-    <service id="serializer.normalizer.number" class="Symfony\Component\Serializer\Normalizer\NumberNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-915"/>
-      <tag name="serializer.normalizer.default" priority="-915"/>
-    </service>
-    <service id="type_info.type_context_factory" class="Symfony\Component\TypeInfo\TypeContext\TypeContextFactory">
-      <argument type="service" id="type_info.resolver.string" on-invalid="null"/>
-    </service>
-    <service id="type_info.resolver" class="Symfony\Component\TypeInfo\TypeResolver\TypeResolver">
-      <argument type="service" id=".service_locator.riiCAol"/>
-    </service>
-    <service id="type_info.resolver.reflection_type" class="Symfony\Component\TypeInfo\TypeResolver\ReflectionTypeResolver">
-      <argument type="service" id="type_info.type_context_factory"/>
-    </service>
-    <service id="type_info.resolver.reflection_parameter" class="Symfony\Component\TypeInfo\TypeResolver\ReflectionParameterTypeResolver">
-      <argument type="service" id="type_info.resolver.reflection_type"/>
-      <argument type="service" id="type_info.type_context_factory"/>
-    </service>
-    <service id="type_info.resolver.reflection_property" class="Symfony\Component\TypeInfo\TypeResolver\ReflectionPropertyTypeResolver">
-      <argument type="service" id="type_info.resolver.reflection_type"/>
-      <argument type="service" id="type_info.type_context_factory"/>
-    </service>
-    <service id="type_info.resolver.reflection_return" class="Symfony\Component\TypeInfo\TypeResolver\ReflectionReturnTypeResolver">
-      <argument type="service" id="type_info.resolver.reflection_type"/>
-      <argument type="service" id="type_info.type_context_factory"/>
-    </service>
-    <service id="type_info.resolver.string" class="Symfony\Component\TypeInfo\TypeResolver\StringTypeResolver"/>
-    <service id="type_info.resolver.reflection_parameter.phpdoc_aware" class="Symfony\Component\TypeInfo\TypeResolver\PhpDocAwareReflectionTypeResolver">
-      <argument type="service" id="type_info.resolver.reflection_parameter"/>
-      <argument type="service" id="type_info.resolver.string"/>
-      <argument type="service" id="type_info.type_context_factory"/>
-    </service>
-    <service id="type_info.resolver.reflection_property.phpdoc_aware" class="Symfony\Component\TypeInfo\TypeResolver\PhpDocAwareReflectionTypeResolver">
-      <argument type="service" id="type_info.resolver.reflection_property"/>
-      <argument type="service" id="type_info.resolver.string"/>
-      <argument type="service" id="type_info.type_context_factory"/>
-    </service>
-    <service id="type_info.resolver.reflection_return.phpdoc_aware" class="Symfony\Component\TypeInfo\TypeResolver\PhpDocAwareReflectionTypeResolver">
-      <argument type="service" id="type_info.resolver.reflection_return"/>
-      <argument type="service" id="type_info.resolver.string"/>
-      <argument type="service" id="type_info.type_context_factory"/>
-    </service>
-    <service id="property_info" class="Symfony\Component\PropertyInfo\PropertyInfoExtractor">
-      <argument type="iterator">
-        <argument type="service" id="property_info.serializer_extractor"/>
-        <argument type="service" id="property_info.reflection_extractor"/>
-      </argument>
-      <argument type="iterator">
-        <argument type="service" id="property_info.constructor_extractor"/>
-        <argument type="service" id="property_info.phpstan_extractor"/>
-        <argument type="service" id="property_info.php_doc_extractor"/>
-        <argument type="service" id="property_info.reflection_extractor"/>
-      </argument>
-      <argument type="iterator">
-        <argument type="service" id="property_info.php_doc_extractor"/>
-      </argument>
-      <argument type="iterator">
-        <argument type="service" id="property_info.reflection_extractor"/>
-      </argument>
-      <argument type="iterator">
-        <argument type="service" id="property_info.reflection_extractor"/>
-      </argument>
-    </service>
-    <service id="property_info.reflection_extractor" class="Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor">
-      <tag name="property_info.list_extractor" priority="-1000"/>
-      <tag name="property_info.type_extractor" priority="-1002"/>
-      <tag name="property_info.constructor_extractor" priority="-1002"/>
-      <tag name="property_info.access_extractor" priority="-1000"/>
-      <tag name="property_info.initializable_extractor" priority="-1000"/>
-    </service>
-    <service id="property_info.constructor_extractor" class="Symfony\Component\PropertyInfo\Extractor\ConstructorExtractor">
-      <tag name="property_info.type_extractor" priority="-999"/>
-      <argument type="iterator">
-        <argument type="service" id="property_info.phpstan_extractor"/>
-        <argument type="service" id="property_info.php_doc_extractor"/>
-        <argument type="service" id="property_info.reflection_extractor"/>
-      </argument>
-    </service>
-    <service id="property_info.phpstan_extractor" class="Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor">
-      <tag name="property_info.type_extractor" priority="-1000"/>
-      <tag name="property_info.constructor_extractor" priority="-1000"/>
-    </service>
-    <service id="property_info.php_doc_extractor" class="Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor">
-      <tag name="property_info.description_extractor" priority="-1000"/>
-      <tag name="property_info.type_extractor" priority="-1001"/>
-      <tag name="property_info.constructor_extractor" priority="-1001"/>
     </service>
     <service id=".cache_connection.MfCypIA" class="Symfony\Component\Cache\Adapter\AbstractAdapter" constructor="createConnection">
       <argument>redis://localhost</argument>
@@ -1853,76 +1518,6 @@
         <argument key="lazy">true</argument>
       </argument>
     </service>
-    <service id="cache.property_access" class="Symfony\Component\Cache\Adapter\ArrayAdapter">
-      <argument>0</argument>
-      <argument>false</argument>
-    </service>
-    <service id="session.factory" class="Symfony\Component\HttpFoundation\Session\SessionFactory">
-      <argument type="service" id="request_stack"/>
-      <argument type="service" id="session.storage.factory.native"/>
-      <argument type="collection">
-        <argument type="service" id="session_listener"/>
-        <argument>onSessionUsage</argument>
-      </argument>
-    </service>
-    <service id="session.storage.factory.native" class="Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorageFactory">
-      <argument>%session.storage.options%</argument>
-      <argument type="service" id="session.handler.native"/>
-      <argument type="service">
-        <service class="Symfony\Component\HttpFoundation\Session\Storage\MetadataBag">
-          <argument>_sf2_meta</argument>
-          <argument>0</argument>
-        </service>
-      </argument>
-      <argument>true</argument>
-    </service>
-    <service id="session.storage.factory.php_bridge" class="Symfony\Component\HttpFoundation\Session\Storage\PhpBridgeSessionStorageFactory">
-      <argument type="service" id="session.handler.native"/>
-      <argument type="service">
-        <service class="Symfony\Component\HttpFoundation\Session\Storage\MetadataBag">
-          <argument>_sf2_meta</argument>
-          <argument>0</argument>
-        </service>
-      </argument>
-      <argument>true</argument>
-    </service>
-    <service id="session.storage.factory.mock_file" class="Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorageFactory">
-      <argument>/home/shamim/microservice-order-demo/services/payment-service/var/cache/dev/sessions</argument>
-      <argument>MOCKSESSID</argument>
-      <argument type="service">
-        <service class="Symfony\Component\HttpFoundation\Session\Storage\MetadataBag">
-          <argument>_sf2_meta</argument>
-          <argument>0</argument>
-        </service>
-      </argument>
-    </service>
-    <service id="session.handler.native" class="Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandler">
-      <argument type="service">
-        <service class="SessionHandler"/>
-      </argument>
-    </service>
-    <service id="session.handler.native_file" class="Symfony\Component\HttpFoundation\Session\Storage\Handler\StrictSessionHandler">
-      <argument type="service">
-        <service class="Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler">
-          <argument>null</argument>
-        </service>
-      </argument>
-    </service>
-    <service id="session.abstract_handler" class="Symfony\Component\HttpFoundation\Session\Storage\Handler\AbstractSessionHandler">
-      <argument type="abstract">A string or a connection object</argument>
-      <argument type="collection"/>
-      <factory class="Symfony\Component\HttpFoundation\Session\Storage\Handler\SessionHandlerFactory" method="createHandler"/>
-    </service>
-    <service id="session_listener" class="Symfony\Component\HttpKernel\EventListener\SessionListener">
-      <tag name="kernel.event_subscriber"/>
-      <tag name="kernel.reset" method="reset"/>
-      <tag name="container.hot_path"/>
-      <tag name="container.hot_path"/>
-      <argument type="service" id=".service_locator.ECaP3MA"/>
-      <argument>true</argument>
-      <argument>%session.storage.options%</argument>
-    </service>
-    <service id="session.marshaller" class="Symfony\Component\HttpFoundation\Session\Storage\Handler\IdentityMarshaller"/>
     <service id="messenger.senders_locator" class="Symfony\Component\Messenger\Transport\Sender\SendersLocator">
       <argument type="collection">
         <argument key="App\Message\OrderCreatedMessage" type="collection">
@@ -1943,10 +1538,6 @@
       <argument type="service" id="serializer"/>
       <argument>json</argument>
       <argument type="collection"/>
-    </service>
-    <service id="serializer.normalizer.flatten_exception" class="Symfony\Component\Messenger\Transport\Serialization\Normalizer\FlattenExceptionNormalizer">
-      <tag name="serializer.normalizer" built_in="1" priority="-880"/>
-      <tag name="serializer.normalizer.default" priority="-880"/>
     </service>
     <service id="messenger.transport.native_php_serializer" class="Symfony\Component\Messenger\Transport\Serialization\PhpSerializer"/>
     <service id="messenger.middleware.handle_message" class="Symfony\Component\Messenger\Middleware\HandleMessageMiddleware" abstract="true">
@@ -2274,24 +1865,6 @@
         <argument key="kernel" type="service_closure" id="kernel"/>
       </argument>
     </service>
-    <service id=".service_locator.riiCAol" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="string" type="service_closure" id="type_info.resolver.string"/>
-        <argument key="ReflectionParameter" type="service_closure" id="type_info.resolver.reflection_parameter.phpdoc_aware"/>
-        <argument key="ReflectionProperty" type="service_closure" id="type_info.resolver.reflection_property.phpdoc_aware"/>
-        <argument key="ReflectionFunctionAbstract" type="service_closure" id="type_info.resolver.reflection_return.phpdoc_aware"/>
-        <argument key="ReflectionType" type="service_closure" id="type_info.resolver.reflection_type"/>
-      </argument>
-    </service>
-    <service id=".service_locator.ECaP3MA" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="session_factory" type="service_closure" id="session.factory" on-invalid="ignore"/>
-        <argument key="logger" type="service_closure" id="logger" on-invalid="ignore"/>
-        <argument key="request_stack" type="service_closure" id="request_stack" on-invalid="ignore"/>
-      </argument>
-    </service>
     <service id="http_client.uri_template.inner" class="Symfony\Contracts\HttpClient\HttpClientInterface">
       <argument type="collection">
         <argument type="service" id="http_client.transport"/>
@@ -2462,13 +2035,6 @@
       <argument>false</argument>
       <argument type="service_closure" id="console.command.router_match"/>
     </service>
-    <service id=".console.command.serializer_debug.lazy" class="Symfony\Component\Console\Command\LazyCommand">
-      <argument>debug:serializer</argument>
-      <argument type="collection"/>
-      <argument>Display serialization information for classes</argument>
-      <argument>false</argument>
-      <argument type="service_closure" id="console.command.serializer_debug"/>
-    </service>
     <service id=".console.command.yaml_lint.lazy" class="Symfony\Component\Console\Command\LazyCommand">
       <argument>lint:yaml</argument>
       <argument type="collection"/>
@@ -2534,7 +2100,7 @@
     </service>
     <service id="console.command_loader" class="Symfony\Component\Console\CommandLoader\ContainerCommandLoader" public="true">
       <tag name="container.no_preload"/>
-      <argument type="service" id=".service_locator.uWnUEho"/>
+      <argument type="service" id=".service_locator.B4J7MBf"/>
       <argument type="collection">
         <argument key="about">console.command.about</argument>
         <argument key="assets:install">console.command.assets_install</argument>
@@ -2559,7 +2125,6 @@
         <argument key="messenger:stats">console.command.messenger_stats</argument>
         <argument key="debug:router">console.command.router_debug</argument>
         <argument key="router:match">console.command.router_match</argument>
-        <argument key="debug:serializer">console.command.serializer_debug</argument>
         <argument key="lint:yaml">console.command.yaml_lint</argument>
         <argument key="secrets:set">console.command.secrets_set</argument>
         <argument key="secrets:remove">console.command.secrets_remove</argument>
@@ -2571,7 +2136,7 @@
         <argument key="error:dump">console.command.error_dumper</argument>
       </argument>
     </service>
-    <service id=".service_locator.uWnUEho" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.B4J7MBf" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="console.command.about" type="service_closure" id=".console.command.about.lazy"/>
@@ -2597,7 +2162,6 @@
         <argument key="console.command.messenger_stats" type="service_closure" id=".console.command.messenger_stats.lazy"/>
         <argument key="console.command.router_debug" type="service_closure" id=".console.command.router_debug.lazy"/>
         <argument key="console.command.router_match" type="service_closure" id=".console.command.router_match.lazy"/>
-        <argument key="console.command.serializer_debug" type="service_closure" id=".console.command.serializer_debug.lazy"/>
         <argument key="console.command.yaml_lint" type="service_closure" id=".console.command.yaml_lint.lazy"/>
         <argument key="console.command.secrets_set" type="service_closure" id=".console.command.secrets_set.lazy"/>
         <argument key="console.command.secrets_remove" type="service_closure" id=".console.command.secrets_remove.lazy"/>
@@ -2630,7 +2194,7 @@
     <service id="Psr\Clock\ClockInterface" alias="clock"/>
     <service id="Symfony\Component\HttpKernel\Fragment\FragmentUriGeneratorInterface" alias="fragment.uri_generator"/>
     <service id="error_renderer.html" alias="error_handler.error_renderer.html"/>
-    <service id="error_renderer" alias="error_handler.error_renderer.serializer"/>
+    <service id="error_renderer" alias="error_handler.error_renderer.html"/>
     <service id=".Psr\Container\ContainerInterface $parameter_bag" alias="parameter_bag"/>
     <service id="Psr\Container\ContainerInterface $parameterBag" alias="parameter_bag"/>
     <service id="cache.adapter.valkey" alias="cache.adapter.redis"/>
@@ -2648,32 +2212,10 @@
     <service id="Symfony\Component\Routing\Matcher\UrlMatcherInterface" alias="router.default"/>
     <service id="Symfony\Component\Routing\RequestContextAwareInterface" alias="router.default"/>
     <service id="Symfony\Component\Routing\RequestContext" alias="router.request_context"/>
-    <service id="Symfony\Component\PropertyAccess\PropertyAccessorInterface" alias="property_accessor"/>
-    <service id="Symfony\Component\Serializer\SerializerInterface" alias="serializer"/>
-    <service id="Symfony\Component\Serializer\Normalizer\NormalizerInterface" alias="serializer"/>
-    <service id="Symfony\Component\Serializer\Normalizer\DenormalizerInterface" alias="serializer"/>
-    <service id="Symfony\Component\Serializer\Encoder\EncoderInterface" alias="serializer"/>
-    <service id="Symfony\Component\Serializer\Encoder\DecoderInterface" alias="serializer"/>
-    <service id="serializer.property_accessor" alias="property_accessor"/>
-    <service id="Symfony\Component\Serializer\Mapping\ClassDiscriminatorResolverInterface" alias="serializer.mapping.class_discriminator_resolver"/>
-    <service id="Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface" alias="serializer.mapping.class_metadata_factory"/>
-    <service id="error_renderer.serializer" alias="error_handler.error_renderer.serializer"/>
-    <service id="Symfony\Component\TypeInfo\TypeResolver\TypeResolverInterface" alias="type_info.resolver"/>
-    <service id="Symfony\Component\PropertyInfo\PropertyAccessExtractorInterface" alias="property_info"/>
-    <service id="Symfony\Component\PropertyInfo\PropertyDescriptionExtractorInterface" alias="property_info"/>
-    <service id="Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface" alias="property_info"/>
-    <service id="Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface" alias="property_info"/>
-    <service id="Symfony\Component\PropertyInfo\PropertyListExtractorInterface" alias="property_info"/>
-    <service id="Symfony\Component\PropertyInfo\PropertyInitializableExtractorInterface" alias="property_info"/>
-    <service id="Symfony\Component\PropertyInfo\PropertyReadInfoExtractorInterface" alias="property_info.reflection_extractor"/>
-    <service id="Symfony\Component\PropertyInfo\PropertyWriteInfoExtractorInterface" alias="property_info.reflection_extractor"/>
     <service id="cache.default_redis_provider" alias=".cache_connection.MfCypIA"/>
     <service id="cache.default_valkey_provider" alias=".cache_connection.H8vabc8"/>
     <service id="cache.default_memcached_provider" alias=".cache_connection.8kvDmRs"/>
     <service id="cache.default_doctrine_dbal_provider" alias="database_connection"/>
-    <service id="SessionHandlerInterface" alias="session.handler.native"/>
-    <service id="session.storage.factory" alias="session.storage.factory.native"/>
-    <service id="session.handler" alias="session.handler.native"/>
     <service id="Symfony\Component\Messenger\Transport\Serialization\SerializerInterface" alias="messenger.transport.native_php_serializer"/>
     <service id="messenger.default_serializer" alias="messenger.transport.native_php_serializer"/>
     <service id="messenger.default_bus" alias="messenger.bus.default" public="true"/>

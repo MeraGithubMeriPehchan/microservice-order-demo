@@ -531,7 +531,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
 
     /**
      * Validation configuration
-     * @default {"enabled":true,"enable_attributes":true,"static_method":["loadValidatorMetadata"],"translation_domain":"validators","email_validation_mode":"html5","mapping":{"paths":[]},"not_compromised_password":{"enabled":true,"endpoint":null},"disable_translation":false,"auto_mapping":[]}
+     * @default {"enabled":false,"enable_attributes":true,"static_method":["loadValidatorMetadata"],"translation_domain":"validators","email_validation_mode":"html5","mapping":{"paths":[]},"not_compromised_password":{"enabled":true,"endpoint":null},"disable_translation":false,"auto_mapping":[]}
     */
     public function validation(array $value = []): \Symfony\Config\Framework\ValidationConfig
     {
@@ -1145,7 +1145,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
 
         if (array_key_exists('validation', $value)) {
             $this->_usedProperties['validation'] = true;
-            $this->validation = new \Symfony\Config\Framework\ValidationConfig($value['validation']);
+            $this->validation = \is_array($value['validation']) ? new \Symfony\Config\Framework\ValidationConfig($value['validation']) : $value['validation'];
             unset($value['validation']);
         }
 
@@ -1386,7 +1386,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
             $output['translator'] = $this->translator instanceof \Symfony\Config\Framework\TranslatorConfig ? $this->translator->toArray() : $this->translator;
         }
         if (isset($this->_usedProperties['validation'])) {
-            $output['validation'] = $this->validation->toArray();
+            $output['validation'] = $this->validation instanceof \Symfony\Config\Framework\ValidationConfig ? $this->validation->toArray() : $this->validation;
         }
         if (isset($this->_usedProperties['annotations'])) {
             $output['annotations'] = $this->annotations instanceof \Symfony\Config\Framework\AnnotationsConfig ? $this->annotations->toArray() : $this->annotations;
