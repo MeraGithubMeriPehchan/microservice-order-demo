@@ -1,8 +1,9 @@
 # Dependencies
-/vendor/
+vendor/
+node_modules/
 
 # Cache and logs
-/var/
+var/
 *.log
 
 # Environment files
@@ -11,11 +12,6 @@
 .env.dev
 .env.prod
 .env.test
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
 
 # IDE files
 .vscode/
@@ -26,3 +22,13 @@
 # OS files
 .DS_Store
 Thumbs.db
+
+# Symfony specific
+/public/bundles/
+/var/
+/vendor/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3

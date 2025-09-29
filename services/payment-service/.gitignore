@@ -1,10 +1,28 @@
-
-###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
+# Dependencies
 /vendor/
-###< symfony/framework-bundle ###
+
+# Cache and logs
+/var/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.dev
+.env.prod
+.env.test
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
